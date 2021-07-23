@@ -14,10 +14,16 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  const webview = vscode.window.createWebviewPanel('test', 'test', {viewColumn: vscode.ViewColumn.Beside, preserveFocus: true}, {enableScripts: true});
-  webview.webview.html = html(context.extensionPath);
+  let webview = vscode.window.createWebviewPanel('test', 'test', {viewColumn: vscode.ViewColumn.Beside, preserveFocus: true}, {enableScripts: true});
+  webview.webview.html = html(webview.webview, context.extensionPath);
 
   vscode.window.onDidChangeTextEditorSelection(e => {
+    if (!webview.visible) {
+      webview.dispose();
+      webview = vscode.window.createWebviewPanel('test', 'test', {viewColumn: vscode.ViewColumn.Beside, preserveFocus: true}, {enableScripts: true});
+      webview.webview.html = html(webview.webview, context.extensionPath);
+    }
+
     if (e.selections[0].isSingleLine) {
       let line = e.textEditor.document.lineAt(e.selections[0].active.line);
       let lineLength = line.range.end.character-line.range.start.character;
@@ -29,8 +35,8 @@ export function activate(context: vscode.ExtensionContext) {
 // this method is called when your extension is deactivated
 export function deactivate() { }
 
-function html(extpath: string) {
-  const uri = vscode.Uri.file(path.join(extpath + '/dist', 'webview.js')).with({ scheme: "vscode-resource" });
+function html(webview: vscode.Webview, extpath: string) {
+  const uri = webview.asWebviewUri(vscode.Uri.file(path.join(extpath + '/dist', 'webview.js')));
   return `
   <html>
 <head>
