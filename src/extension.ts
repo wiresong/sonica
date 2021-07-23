@@ -1,5 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
+import { create } from 'domain';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
@@ -9,28 +10,40 @@ export function activate(context: vscode.ExtensionContext) {
   let rulers: number[] = vscode.workspace.getConfiguration('editor')
     .get('rulers') ?? [];
 
+  let isWebviewDisposed = false;
+
+
   vscode.workspace.onDidChangeConfiguration(e => {
     if (e.affectsConfiguration('editor')) {
       rulers = vscode.workspace.getConfiguration('editor').get('rulers') ?? [];
     }
   });
 
-  let webview = vscode.window.createWebviewPanel('Sonica', 'Sonica', {
-    viewColumn: vscode.ViewColumn.Beside, preserveFocus: true
-  },
-    { enableScripts: true });
+  const createWebview = () => {
+    let _webview = vscode.window.createWebviewPanel('Sonica', 'Sonica', {
+      viewColumn: vscode.ViewColumn.Beside,
+      preserveFocus: true,
+    },
+    {
+      enableScripts: true 
+    });
 
-  webview.webview.html = html(webview.webview, context.extensionPath);
+    _webview.webview.html = html(_webview.webview, context.extensionPath);
+    _webview.onDidDispose(e=>{
+      isWebviewDisposed = true;
+    });
+    return _webview;
+  };
+
+
+
+  let webview = createWebview();
 
   vscode.window.onDidChangeTextEditorSelection(e => {
-    if (!webview.visible) {
+    if (isWebviewDisposed || !webview.visible) {
       webview.dispose();
-      webview = vscode.window.createWebviewPanel('test', 'test', {
-        viewColumn: vscode.ViewColumn.Beside, preserveFocus: true
-      },
-        { enableScripts: true });
-
-      webview.webview.html = html(webview.webview, context.extensionPath);
+      webview = createWebview();
+      isWebviewDisposed = false;
     }
 
     if (e.selections[0].isSingleLine) {

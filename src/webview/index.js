@@ -33,14 +33,15 @@ window.onload=(event)=> {
     updateRulerNodes(state.rulers);
 
     if (state.rulers.length > 0 && state.lineLength > state.rulers[0]) {
-      for (const ruler of rulerNodes) {
-        ruler.update(state.lineLength, context.currentTime);
-      }
-
       if (state.cursor > state.rulers[0]) {
         playBeep();
       }
     }
+
+    for (const ruler of rulerNodes) {
+      ruler.update(state.lineLength, context.currentTime);
+    }
+
   });
 };
 
