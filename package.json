@@ -2,6 +2,7 @@
   "name": "linechecker",
 	"displayName": "linechecker",
 	"description": "Sonic indications for lines over a specified limit",
+	"publisher":"Wiresong",
 	"version": "0.0.1",
 	"engines": {
 		"vscode": "^1.58.0"

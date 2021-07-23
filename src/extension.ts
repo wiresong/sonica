@@ -6,7 +6,7 @@ import * as vscode from 'vscode';
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  let rulers = vscode.workspace.getConfiguration('editor').get('rulers')??[];
+  let rulers: number [] = vscode.workspace.getConfiguration('editor').get('rulers')??[];
 
   vscode.workspace.onDidChangeConfiguration(e=>{
     if (e.affectsConfiguration('editor')) {
@@ -21,7 +21,7 @@ export function activate(context: vscode.ExtensionContext) {
     if (e.selections[0].isSingleLine) {
       let line = e.textEditor.document.lineAt(e.selections[0].active.line);
       let lineLength = line.range.end.character-line.range.start.character;
-      webview.webview.postMessage({lineNumber: line.range.start.line, lineLength, cursor: e.selections[0].end.character, rulers });
+      webview.webview.postMessage({lineNumber: line.range.start.line, lineLength, cursor: e.selections[0].end.character, rulers: rulers.sort((a, b) => (a - b)) });
     }
   });
 }
