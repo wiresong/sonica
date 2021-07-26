@@ -13,4 +13,6 @@ const seventhInterval=n=> {
   return halfstep;
 };
 
-export {halfstepToFrequency, seventhInterval};
+const normalize = (val, min, max) => ((val-min)/(max-min))*2-1;
+
+export {halfstepToFrequency, seventhInterval, normalize};

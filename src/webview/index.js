@@ -1,4 +1,56 @@
+import {WaveFile} from 'wavefile';
+
 import { Ruler } from './ruler';
+import {normalize} from './utils';
+import {click} from './files';
+
+
+
+
+class FileNode {
+  constructor(context, gain, buff) {
+    this.context = context;
+    this.gain = gain;
+    let wav = new WaveFile();
+
+    wav.fromBase64(buff);
+    wav.toSampleRate(context.sampleRate);
+    let samples = wav.getSamples();
+    this.audioBuffer = context.createBuffer(wav.fmt.numChannels, wav.fmt.numChannels === 1 ? samples.length : samples[0].length, context.sampleRate);
+    if (wav.fmt.numChannels === 1) {
+      let channel = this.audioBuffer.getChannelData(0);
+      channel.set(samples.map(sample=>normalize(sample, -(2**(wav.bitDepth-1)), 2**(wav.bitDepth-1)-1)));
+    } else {
+      for (let i=0; i<wav.fmt.numChannels; i++) {
+        let channel = this.audioBuffer.getChannelData(i);
+        channel.set(samples[i].map(sample=>normalize(sample, -(2**(wav.bitDepth-1)), 2**(wav.bitDepth-1)-1)));
+      }
+    }
+
+    this.node = null;
+  }
+
+  createNode() {
+    let node = this.context.createBufferSource();
+    node.buffer = this.audioBuffer;
+    node.connect(this.gain);
+    return node;
+  }
+
+  play() {
+    this.stop();
+    this.node = this.createNode();
+    this.node.start();
+  }
+
+  stop() {
+    if (this.node !== null) {
+      this.node.disconnect();
+      this.node = null;
+    }
+  }
+}
+
 
 
 let context;
@@ -11,16 +63,11 @@ window.onload=(event)=> {
   gain = context.createGain();
   gain.gain.value = 1;
 
-  osc = context.createOscillator();
-  osc.type = 'square';
-  osc.frequency.value=0;
-  osc.start();
+  osc = new FileNode(context, gain, click);
 
-  osc.connect(gain);
   gain.connect(context.destination);
 
   window.addEventListener('message', (event) => {
-
     let state = event.data;
 
     // special-case play/pause...
@@ -32,22 +79,18 @@ window.onload=(event)=> {
 
     updateRulerNodes(state.rulers);
 
-    if (state.rulers.length > 0 && state.lineLength > state.rulers[0]) {
-      if (state.cursor > state.rulers[0]) {
-        playBeep();
-      }
+    if (state.rulers.length > 0 && state.cursor > state.rulers[0]) {
+      playBeep();
     }
 
     for (const ruler of rulerNodes) {
       ruler.update(state.lineLength, context.currentTime);
     }
-
   });
 };
 
 const playBeep = () => {
-  osc.frequency.setValueAtTime(440, context.currentTime);
-  osc.frequency.setValueAtTime(0, context.currentTime+0.1);
+  osc.play();
 };
 
 

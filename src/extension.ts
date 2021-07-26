@@ -1,6 +1,6 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import { create } from 'domain';
+
 import * as path from 'path';
 import * as vscode from 'vscode';
 
@@ -10,12 +10,16 @@ export function activate(context: vscode.ExtensionContext) {
   let rulers: number[] = vscode.workspace.getConfiguration('editor')
     .get('rulers') ?? [];
 
+  let tabSize: number = vscode.workspace.getConfiguration('editor')
+    .get('tabSize') ?? 4;
+
   let isWebviewDisposed = false;
 
 
   vscode.workspace.onDidChangeConfiguration(e => {
     if (e.affectsConfiguration('editor')) {
       rulers = vscode.workspace.getConfiguration('editor').get('rulers') ?? [];
+      tabSize = vscode.workspace.getConfiguration('editor').get('tabSize') ?? 4;
     }
   });
 
@@ -48,11 +52,20 @@ export function activate(context: vscode.ExtensionContext) {
 
     if (e.selections[0].isSingleLine) {
       let line = e.textEditor.document.lineAt(e.selections[0].active.line);
-      let lineLength = line.range.end.character - line.range.start.character;
+      let text = line.text;
+      let cursor = e.selections[0].end.character;
+      let tabs = (line.text.match(/\t/g)??[]).length;
+      for (let i=0; i<tabs; i++) {
+        let tabWidth = tabSize-(text.indexOf('\t')%tabSize);
+        text = text.replace('\t', ' '.repeat(tabWidth));
+        cursor += tabWidth-1;
+      }
+      let lineLength = text.length;
+      console.log('cursor:'+cursor);
       webview.webview.postMessage({
         lineNumber: line.range.start.line,
         lineLength,
-        cursor: e.selections[0].end.character,
+        cursor,
         rulers: rulers.sort((a, b) => (a - b))
       });
     }
@@ -71,7 +84,7 @@ function html(webview: vscode.Webview, extpath: string) {
   return `
   <html>
 <head>
-<title>thing</title>
+<title>Sonica</title>
 </head>
 <body>
 <script src="${uri}"></script>
