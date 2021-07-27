@@ -1,9 +1,10 @@
 {
-  "name": "linechecker",
-  "displayName": "linechecker",
+  "name": "sonica",
+  "displayName": "Sonica",
   "description": "Sonic indications for lines over a specified limit",
   "publisher": "Wiresong",
   "version": "0.0.1",
+  "repository": "https://github.com/wiresong/sonica",
   "engines": {
     "vscode": "^1.58.0"
   },
@@ -19,12 +20,6 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "linechecker.helloWorld",
-        "title": "Hello World"
-      }
-    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
