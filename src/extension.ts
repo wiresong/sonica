@@ -1,25 +1,17 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   let rulers: number[] = vscode.workspace.getConfiguration('editor')
     .get('rulers') ?? [];
 
-  let tabSize: number = vscode.workspace.getConfiguration('editor')
-    .get('tabSize') ?? 4;
-
   let isWebviewDisposed = false;
 
+  let previousLineLength: number = 0;
 
   vscode.workspace.onDidChangeConfiguration(e => {
     if (e.affectsConfiguration('editor')) {
       rulers = vscode.workspace.getConfiguration('editor').get('rulers') ?? [];
-      tabSize = vscode.workspace.getConfiguration('editor').get('tabSize') ?? 4;
     }
   });
 
@@ -54,16 +46,32 @@ export function activate(context: vscode.ExtensionContext) {
       let line = e.textEditor.document.lineAt(e.selections[0].active.line);
       let text = line.text;
       let cursor = e.selections[0].end.character;
+      let tabSize: number = e.textEditor.options.tabSize as number;
       let tabs = (line.text.match(/\t/g)??[]).length;
+
       for (let i=0; i<tabs; i++) {
-        let tabWidth = tabSize-(text.indexOf('\t')%tabSize);
+        let tabPosition = text.indexOf('\t');
+        let tabWidth = tabSize-(tabPosition%tabSize);
         text = text.replace('\t', ' '.repeat(tabWidth));
-        cursor += tabWidth-1;
+        
+        if (tabPosition <= cursor) {
+          cursor += tabWidth-1;
+        }
       }
+
       let lineLength = text.length;
-      console.log('cursor:'+cursor);
+
+      // When typing a character, the cursor moves to character position  + 1, i.e. the blank space right after the character
+      // When navigating, the cursor equals the position of the character being focused
+      // We check if we're only navigating, and update the cursor as a result
+      // If you want to change this, remember that lineLength and cursor are currently both 1-indexed
+      if (previousLineLength === lineLength) {
+        cursor += 1;
+      } else {
+        previousLineLength = lineLength;
+      }
+
       webview.webview.postMessage({
-        lineNumber: line.range.start.line,
         lineLength,
         cursor,
         rulers: rulers.sort((a, b) => (a - b))
@@ -76,7 +84,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 }
 
-// this method is called when your extension is deactivated
+
 export function deactivate() { }
 
 function html(webview: vscode.Webview, extpath: string) {
@@ -90,6 +98,5 @@ function html(webview: vscode.Webview, extpath: string) {
 <script src="${uri}"></script>
 </body>
 </html>
-
   `;
 }

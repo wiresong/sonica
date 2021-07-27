@@ -5,8 +5,6 @@ import {normalize} from './utils';
 import {click} from './files';
 
 
-
-
 class FileNode {
   constructor(context, gain, buff) {
     this.context = context;
@@ -72,9 +70,9 @@ window.onload=(event)=> {
 
     // special-case play/pause...
     if (state==="pause") {
-      gain.gain.linearRampToValueAtTime(0, context.currentTime);
+      gain.gain.value = 0;
     } else if (state==="play") {
-      gain.gain.linearRampToValueAtTime(1, context.currentTime);
+      gain.gain.value = 1;
     }
 
     updateRulerNodes(state.rulers);
@@ -92,7 +90,6 @@ window.onload=(event)=> {
 const playBeep = () => {
   osc.play();
 };
-
 
 const updateRulerNodes = rulers => {
   for (const [index, position] of rulers.entries()) {
