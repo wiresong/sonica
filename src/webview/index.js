@@ -1,7 +1,7 @@
 import {WaveFile} from 'wavefile';
 
 import { Ruler } from './ruler';
-import {normalize} from './utils';
+import {normalize, range} from './utils';
 import {click} from './files';
 
 
@@ -26,25 +26,36 @@ class FileNode {
     }
 
     this.node = null;
+    this.panner = null;
   }
 
   createNode() {
     let node = this.context.createBufferSource();
+    let panner = context.createPanner();
     node.buffer = this.audioBuffer;
-    node.connect(this.gain);
-    return node;
+
+    node.connect(panner);
+    panner.connect(this.gain);
+    this.node = node;
+    this.panner = panner;
   }
 
-  play() {
+  play(pos=0) {
     this.stop();
-    this.node = this.createNode();
+    this.createNode();
+    this.panner.positionX.value = pos;
     this.node.start();
+    this.node.oended = (() => {
+      this.stop();
+    });
   }
 
   stop() {
     if (this.node !== null) {
+      this.panner.disconnect();
       this.node.disconnect();
       this.node = null;
+      this.panner = null;
     }
   }
 }
@@ -59,7 +70,7 @@ let rulerNodes = [];
 window.onload=(event)=> {
   context = new window.AudioContext();
   gain = context.createGain();
-  gain.gain.value = 1;
+  gain.gain.value = 0.25;
 
   osc = new FileNode(context, gain, click);
 
@@ -70,16 +81,19 @@ window.onload=(event)=> {
 
     // special-case play/pause...
     if (state==="pause") {
-      gain.gain.value = 0;
+      gain.gain.linearRampToValueAtTime(0, context.currentTime+0.2);
     } else if (state==="play") {
-      gain.gain.value = 1;
+      gain.gain.linearRampToValueAtTime(0.25, context.currentTime+0.2);
     }
 
+    console.log(state);
     updateRulerNodes(state.rulers);
 
-    if (state.rulers.length > 0 && state.cursor > state.rulers[0]) {
+    /*if (state.rulers.length > 0 && state.cursor > state.rulers[0]) {
       playBeep();
-    }
+    }*/
+
+    playBeep(state.rulers, state.cursor);
 
     for (const ruler of rulerNodes) {
       ruler.update(state.lineLength, context.currentTime);
@@ -87,8 +101,16 @@ window.onload=(event)=> {
   });
 };
 
-const playBeep = () => {
-  osc.play();
+const playBeep = (rulers, cursor) => {
+  let r = new range(rulers);
+  let [min, max] = r.getBoundsFor(cursor);
+  let position;
+  if (min===undefined) {
+    position = 1;
+  } else {
+    position = normalize(cursor, min, max);
+  }
+  osc.play(position);
 };
 
 const updateRulerNodes = rulers => {

@@ -13,6 +13,27 @@ const seventhInterval=n=> {
   return halfstep;
 };
 
+// Note that this normalizes in the range [-1, 1], not [0, 1]
 const normalize = (val, min, max) => ((val-min)/(max-min))*2-1;
 
-export {halfstepToFrequency, seventhInterval, normalize};
+class range {
+  constructor(bounds) {
+    this.bounds = bounds;
+    this.bounds.sort((a, b)=>a-b);
+    if (!this.bounds.includes(0)) {
+      this.bounds.unshift(0);
+    }
+  }
+
+  getBoundsFor(n) {
+    for (const [index, element] of this.bounds.entries()) {
+      if (n < element ) {
+        return [this.bounds[index-1], this.bounds[index]];
+      }
+    }
+    return [];
+  }
+}
+
+
+export {halfstepToFrequency, seventhInterval, normalize, range};
