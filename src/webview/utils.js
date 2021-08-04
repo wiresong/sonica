@@ -27,7 +27,7 @@ class range {
 
   getBoundsFor(n) {
     for (const [index, element] of this.bounds.entries()) {
-      if (n < element ) {
+      if (n <= element ) {
         return [this.bounds[index-1], this.bounds[index]];
       }
     }
