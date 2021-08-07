@@ -20,6 +20,21 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Sonica",
+      "properties": {
+        "sonica.enablePanning": {
+          "type": "boolean",
+          "default": false,
+          "description": "Determine if the cursor pans as you type"
+        },
+        "sonica.volume": {
+          "type": "number",
+          "default": 0.25,
+          "description": "the volume of the cursor and rulers, in the range [0, 1]"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",

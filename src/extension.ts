@@ -2,18 +2,23 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
-  let rulers: number[] = vscode.workspace.getConfiguration('editor')
-    .get('rulers') ?? [];
+  let rulers: number[];
+  let enablePanning: boolean;
+  let volume: number;
+
+  const setConfigurationVariables = () => {
+    rulers = vscode.workspace.getConfiguration('editor').get('rulers', []);
+    enablePanning = vscode.workspace.getConfiguration('sonica').get('enablePanning', false);
+    volume = vscode.workspace.getConfiguration('sonica').get('volume', 0.25);
+  };
+
+  setConfigurationVariables();
 
   let isWebviewDisposed = false;
 
   let previousLineLength: number = 0;
 
-  vscode.workspace.onDidChangeConfiguration(e => {
-    if (e.affectsConfiguration('editor')) {
-      rulers = vscode.workspace.getConfiguration('editor').get('rulers') ?? [];
-    }
-  });
+  vscode.workspace.onDidChangeConfiguration(e => setConfigurationVariables());
 
   const createWebview = () => {
     let _webview = vscode.window.createWebviewPanel('Sonica', 'Sonica', {
@@ -74,13 +79,19 @@ export function activate(context: vscode.ExtensionContext) {
       webview.webview.postMessage({
         lineLength,
         cursor,
-        rulers: rulers.sort((a, b) => (a - b))
+        rulers: rulers.sort((a, b) => (a - b)),
+        enablePanning,
+        volume
       });
     }
   });
 
   vscode.window.onDidChangeWindowState(e=>{
-    webview.webview.postMessage(e.focused? "play" : "pause");
+    if (e.focused) {
+      webview.webview.postMessage({"cmd": "play", volume});
+    } else {
+      webview.webview.postMessage({"cmd": "pause", volume});
+    }
   });
 }
 

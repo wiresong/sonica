@@ -70,7 +70,7 @@ let rulerNodes = [];
 window.onload=(event)=> {
   context = new window.AudioContext();
   gain = context.createGain();
-  gain.gain.value = 0.25;
+  gain.gain.value = 0;
 
   osc = new FileNode(context, gain, click);
 
@@ -80,20 +80,24 @@ window.onload=(event)=> {
     let state = event.data;
 
     // special-case play/pause...
-    if (state==="pause") {
+    if (state.cmd==="pause") {
       gain.gain.linearRampToValueAtTime(0, context.currentTime+0.2);
-    } else if (state==="play") {
+    } else if (state.cmd==="play") {
       gain.gain.linearRampToValueAtTime(0.25, context.currentTime+0.2);
+    } else {
+      gain.gain.value = state.volume;
     }
 
-    console.log(state);
     updateRulerNodes(state.rulers);
 
-    /*if (state.rulers.length > 0 && state.cursor > state.rulers[0]) {
-      playBeep();
-    }*/
+    if (state.enablePanning) {
+      playBeep(state.rulers, state.cursor);
+    } else {
+      if (state.rulers.length > 0 && state.cursor > state.rulers[0]) {
+        playBeep([], 0, true);
+      }
+    }
 
-    playBeep(state.rulers, state.cursor);
 
     for (const ruler of rulerNodes) {
       ruler.update(state.lineLength, context.currentTime);
@@ -101,7 +105,10 @@ window.onload=(event)=> {
   });
 };
 
-const playBeep = (rulers, cursor) => {
+const playBeep = (rulers, cursor, centered=false) => {
+  if (centered) {
+    return osc.play(0);
+  }
   let r = new range(rulers);
   let [min, max] = r.getBoundsFor(cursor);
   let position;
