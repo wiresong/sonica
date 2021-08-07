@@ -98,9 +98,8 @@ window.onload=(event)=> {
       }
     }
 
-
     for (const ruler of rulerNodes) {
-      ruler.update(state.lineLength, context.currentTime);
+      ruler.update(state.cursor);
     }
   });
 };
@@ -125,13 +124,12 @@ const updateRulerNodes = rulers => {
     if (rulerNodes[index]!==undefined) {
       rulerNodes[index].setPosition(index, position);
     } else {
-      let node = context.createOscillator();
-      node.frequency.value = 0;
-      node.start();
-      node.connect(gain);
-      rulerNodes.push(new Ruler(node, index, position));
+      rulerNodes.push(new Ruler({ context, destination: gain, index, position}));
     }
   }
   // Delete any extraneous nodes...
+  for (let i = rulers.length; i < rulerNodes.length; i++) {
+    rulerNodes[i].maybeStopPlaying();
+  }
   rulerNodes.splice(rulers.length);
 };
