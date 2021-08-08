@@ -49,6 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     if (e.selections[0].isSingleLine) {
       let line = e.textEditor.document.lineAt(e.selections[0].active.line);
+      let lineNumber = line.lineNumber;
       let text = line.text;
       let cursor = e.selections[0].end.character;
       let tabSize: number = e.textEditor.options.tabSize as number;
@@ -81,7 +82,8 @@ export function activate(context: vscode.ExtensionContext) {
         cursor,
         rulers: rulers.sort((a, b) => (a - b)),
         enablePanning,
-        volume
+        volume,
+        lineNumber
       });
     }
   });

@@ -66,6 +66,7 @@ let context;
 let osc;
 let gain;
 let rulerNodes = [];
+let oldState;
 
 window.onload=(event)=> {
   context = new window.AudioContext();
@@ -83,7 +84,7 @@ window.onload=(event)=> {
     if (state.cmd==="pause") {
       gain.gain.linearRampToValueAtTime(0, context.currentTime+0.2);
     } else if (state.cmd==="play") {
-      gain.gain.linearRampToValueAtTime(0.25, context.currentTime+0.2);
+      gain.gain.linearRampToValueAtTime(state.volume, context.currentTime+0.2);
     } else {
       gain.gain.value = state.volume;
     }
@@ -93,14 +94,18 @@ window.onload=(event)=> {
     if (state.enablePanning) {
       playBeep(state.rulers, state.cursor);
     } else {
-      if (state.rulers.length > 0 && state.cursor > state.rulers[0]) {
-        playBeep([], 0, true);
+      if (state.rulers.length > 0) {
+        if ((state.cursor > state.rulers[0]) || (oldState!==undefined && oldState.lineNumber!==state.lineNumber && state.lineLength > state.rulers[0])) {
+          playBeep([], 0, true);
+        }
       }
     }
 
     for (const ruler of rulerNodes) {
       ruler.update(state.cursor);
     }
+
+    oldState = state;
   });
 };
 
