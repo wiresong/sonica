@@ -78,6 +78,7 @@ export function activate(context: vscode.ExtensionContext) {
       }
 
       webview.webview.postMessage({
+        "cmd": "cursor",
         lineLength,
         cursor,
         rulers: rulers.sort((a, b) => (a - b)),
@@ -94,6 +95,10 @@ export function activate(context: vscode.ExtensionContext) {
     } else {
       webview.webview.postMessage({"cmd": "pause", volume});
     }
+  });
+
+  vscode.languages.onDidChangeDiagnostics(e=>{
+    e.uris.map(u=>vscode.languages.getDiagnostics(u).map(diag=>console.log(diag.message)));
   });
 }
 
