@@ -34,7 +34,6 @@ export class Cursor extends Feature {
   }
 
   handleLineChange(state) {
-    console.log("last line number:" + this.lastLineNumber + ", line number:" + state.lineNumber);
     if (this.rulerNodes.length === 0) return;
     if (state.lineNumber !== this.lastLineNumber && state.lineLength > state.rulers[0]) {
       this.click.play();

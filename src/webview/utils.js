@@ -18,11 +18,12 @@ const seventhInterval=n=> {
 // Note that this normalizes in the range [-1, 1], not [0, 1]
 const normalize = (val, min, max) => ((val-min)/(max-min))*2-1;
 
+// This is O(n^2), but we should only use this for diagnostics 
 class Range {
-  constructor(bounds) {
+  constructor(bounds, include_zero=true) {
     this.bounds = bounds;
     this.bounds.sort((a, b)=>a-b);
-    if (!this.bounds.includes(0)) {
+    if (!include_zero===true && this.bounds.includes(0)) {
       this.bounds.unshift(0);
     }
   }
@@ -34,6 +35,10 @@ class Range {
       }
     }
     return [];
+  }
+
+  contains(n) {
+    return this.getBoundsFor(n)[0]!==undefined;
   }
 }
 

@@ -2,17 +2,25 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 export function activate(context: vscode.ExtensionContext) {
+  let enabled: boolean;
   let rulers: number[];
   let enablePanning: boolean;
   let volume: number;
 
   const setConfigurationVariables = () => {
+    enabled = vscode.workspace.getConfiguration('sonica').get('enabled', true);
     rulers = vscode.workspace.getConfiguration('editor').get('rulers', []);
     enablePanning = vscode.workspace.getConfiguration('sonica').get('enablePanning', false);
     volume = vscode.workspace.getConfiguration('sonica').get('volume', 0.25);
   };
 
-  setConfigurationVariables();
+  const toggleEnabled = () => {
+    if (enabled) {
+      webview.webview.postMessage({"cmd": "play", volume});
+    } else {
+      webview.webview.postMessage({"cmd": "pause", volume});
+    }
+  };
 
   let isWebviewDisposed = false;
 
@@ -37,8 +45,15 @@ export function activate(context: vscode.ExtensionContext) {
   };
 
 
-
   let webview = createWebview();
+
+  setConfigurationVariables();
+  toggleEnabled();
+
+  vscode.workspace.onDidChangeConfiguration(e => {
+    setConfigurationVariables();
+    toggleEnabled();
+  });
 
   vscode.window.onDidChangeTextEditorSelection(e => {
     if (isWebviewDisposed || !webview.visible) {
@@ -74,6 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (previousLineLength === lineLength) {
         cursor += 1;
       } else {
+        if (cursor===0) cursor+=1; // When you move right to the beginning of the line, the cursor is 0; may fix this to be better later
         previousLineLength = lineLength;
       }
 
@@ -90,7 +106,7 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   vscode.window.onDidChangeWindowState(e=>{
-    if (e.focused) {
+    if (e.focused && enabled) {
       webview.webview.postMessage({"cmd": "play", volume});
     } else {
       webview.webview.postMessage({"cmd": "pause", volume});
@@ -98,7 +114,11 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   vscode.languages.onDidChangeDiagnostics(e=>{
-    e.uris.map(u=>vscode.languages.getDiagnostics(u).map(diag=>console.log(diag.message)));
+    webview.webview.postMessage({
+      'cmd': 'diag',
+      uris: e.uris,
+      diagnostics: vscode.languages.getDiagnostics()
+    });
   });
 }
 

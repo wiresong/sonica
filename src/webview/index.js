@@ -1,6 +1,7 @@
 import { Dispatcher } from './dispatcher';
 
 import {Cursor} from './features/cursor';
+import {Diag} from './features/diag';
 import {Global} from './features/global';
 import {PlayPause} from './features/playpause';
 
@@ -14,7 +15,7 @@ window.onload=(event)=> {
   dispatcher.register(/.*/, Global);
   dispatcher.register(/play|pause/, PlayPause);
   dispatcher.register(/cursor/, Cursor);
-
+  dispatcher.register(/diag|cursor/, Diag);
   gain.connect(context.destination);
 
   window.addEventListener('message', (event) => {
