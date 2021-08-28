@@ -23,7 +23,7 @@ class Range {
   constructor(bounds, include_zero=true) {
     this.bounds = bounds;
     this.bounds.sort((a, b)=>a-b);
-    if (!include_zero===true && this.bounds.includes(0)) {
+    if (include_zero===true && !this.bounds.includes(0)) {
       this.bounds.unshift(0);
     }
   }
