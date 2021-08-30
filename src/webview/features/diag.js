@@ -1,10 +1,9 @@
 import { differenceWith, isEqual} from 'lodash';
 
-
-import {error} from '../files';
-import {FileNode, Range} from '../utils';
-
 import {Feature} from './feature';
+
+import {error, warning} from '../files';
+import {FileNode, Range} from '../utils';
 
 
 export class Diag extends Feature {
@@ -19,16 +18,19 @@ export class Diag extends Feature {
     // But, really: refactor this to something better, later
     super(globalState);
     this.error = new FileNode(this.context, this.globalGain, error);
+    this.warning = new FileNode(this.context, this.globalGain, warning);
     
     this.diagnostics = [];
+    this.previousLineNumber = undefined;
   }
 
   run(state) {
-    //this.error.play();
-    if (state.cmd === 'diag')  {
-      this.handleUpdatedDiagnostics(state);
-    } else if (state.cmd === 'cursor') {
-      this.handleCursor(state);
+    if (state.enableDiagnostics===true) {
+      if (state.cmd === 'diag')  {
+        this.handleUpdatedDiagnostics(state);
+      } else if (state.cmd === 'cursor') {
+        this.handleCursor(state);
+      }
     }
   }
 
@@ -42,7 +44,6 @@ export class Diag extends Feature {
     }
 
     // Todo: space out the sounds a little bit. 0.25 seconds?
-    console.log(newDiagnostics);
     for (const diagnostic of newDiagnostics) {
       this.playDiagnosticSound(diagnostic);
     }
@@ -51,19 +52,21 @@ export class Diag extends Feature {
 
   handleCursor(state) {
     let {cursor, lineNumber} = state;
-    console.log(cursor);
     let diagnostics = this.diagnostics.flatMap(element=>element[1]).filter(diag=>diag.range[0].line===lineNumber);
     for (const diagnostic of diagnostics) {
       let range = new Range([diagnostic.range[0].character, diagnostic.range[1].character], false);
-      if (range.contains(cursor)) {
+      if (this.previousLineNumber!==lineNumber || range.contains(cursor)) {
         this.playDiagnosticSound(diagnostic);
       }
     }
+    this.previousLineNumber = lineNumber;
   }
 
   playDiagnosticSound(diagnostic) {
-    if (diagnostic.severity==='Error'  ) {
+    if (diagnostic.severity === 'Error') {
       this.error.play();
+    } else if (diagnostic.severity === 'Warning') {
+      this.warning.play();
     }
   }
 }

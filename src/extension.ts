@@ -5,12 +5,14 @@ export function activate(context: vscode.ExtensionContext) {
   let enabled: boolean;
   let rulers: number[];
   let enablePanning: boolean;
+  let enableDiagnostics: boolean;
   let volume: number;
 
   const setConfigurationVariables = () => {
     enabled = vscode.workspace.getConfiguration('sonica').get('enabled', true);
     rulers = vscode.workspace.getConfiguration('editor').get('rulers', []);
     enablePanning = vscode.workspace.getConfiguration('sonica').get('enablePanning', false);
+    enableDiagnostics = vscode.workspace.getConfiguration('sonica').get('enableDiagnostics', false);
     volume = vscode.workspace.getConfiguration('sonica').get('volume', 0.25);
   };
 
@@ -25,8 +27,6 @@ export function activate(context: vscode.ExtensionContext) {
   let isWebviewDisposed = false;
 
   let previousLineLength: number = 0;
-
-  vscode.workspace.onDidChangeConfiguration(e => setConfigurationVariables());
 
   const createWebview = () => {
     let _webview = vscode.window.createWebviewPanel('Sonica', 'Sonica', {
@@ -43,7 +43,6 @@ export function activate(context: vscode.ExtensionContext) {
     });
     return _webview;
   };
-
 
   let webview = createWebview();
 
@@ -99,6 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
         cursor,
         rulers: rulers.sort((a, b) => (a - b)),
         enablePanning,
+        enableDiagnostics,
         volume,
         lineNumber
       });
@@ -116,6 +116,7 @@ export function activate(context: vscode.ExtensionContext) {
   vscode.languages.onDidChangeDiagnostics(e=>{
     webview.webview.postMessage({
       'cmd': 'diag',
+      enableDiagnostics,
       uris: e.uris,
       diagnostics: vscode.languages.getDiagnostics()
     });

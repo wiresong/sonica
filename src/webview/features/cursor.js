@@ -23,7 +23,7 @@ export class Cursor extends Feature {
       if (this.rulerNodes[index] !== undefined) {
         this.rulerNodes[index].setPosition(index, position);
       } else {
-        this.rulerNodes.push(new RulerNode({ context: this.context, destination: this.globalGain, index, position }));
+        this.rulerNodes.push(new RulerNode({ context: this.context, destination: this.globalGain, parent: this, index, position}));
       }
     }
     // Delete any extraneous nodes...
@@ -63,11 +63,16 @@ export class Cursor extends Feature {
       node.update(state.cursor);
     }
   }
+
+  getPlayingRulers() {
+    return this.rulerNodes.filter(node=>node.playing===true).length;
+  }
 }
 
 class RulerNode {
-  constructor({ context, destination, index, position }) {
+  constructor({ context, destination, parent, index, position }) {
     this.context = context;
+    this.parent = parent;
     this.node = null;
     this.destination = destination;
     this.intermediateGain = this.context.createGain();
@@ -80,10 +85,16 @@ class RulerNode {
     this.frequency = halfstepToFrequency(seventhInterval(index) - 12);
   }
 
+  setVolume() {
+    let playingRulers = this.parent.getPlayingRulers();
+    this.intermediateGain.gain.value = 1/(playingRulers+1);
+  }
+
   update(cursor) {
     let shouldPlay = cursor > this.position;
     if (shouldPlay) {
       this.maybeStartPlaying();
+      this.setVolume();
     } else {
       this.maybeStopPlaying();
     }
@@ -99,7 +110,7 @@ class RulerNode {
     this.node.frequency.value = 100;
     this.node.frequency.exponentialRampToValueAtTime(this.frequency, ct + 0.03);
     this.node.start();
-    this.intermediateGain.gain.value = 1.0;
+    this.intermediateGain.gain.value = 0; //we set volume later
     this.node.connect(this.intermediateGain);
     this.playing = true;
   }
