@@ -6,7 +6,7 @@ export class PlayPause extends Feature {
     if (state.cmd === "pause") {
       this.globalGain.gain.linearRampToValueAtTime(0, this.context.currentTime+0.2);
     } else if (state.cmd === "play") {
-      this.globalGain.gain.linearRampToValueAtTime(state.volume, context.currentTime+0.2);
+      this.globalGain.gain.linearRampToValueAtTime(state.volume, this.context.currentTime+0.2);
     }
   }
 }

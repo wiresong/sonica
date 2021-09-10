@@ -16,13 +16,6 @@ export function activate(context: vscode.ExtensionContext) {
     volume = vscode.workspace.getConfiguration('sonica').get('volume', 0.25);
   };
 
-  const toggleEnabled = () => {
-    if (enabled) {
-      webview.webview.postMessage({"cmd": "play", volume});
-    } else {
-      webview.webview.postMessage({"cmd": "pause", volume});
-    }
-  };
 
   let isWebviewDisposed = false;
 
@@ -46,12 +39,21 @@ export function activate(context: vscode.ExtensionContext) {
 
   let webview = createWebview();
 
+  const toggleVolume = () => {
+    // This handles both enabling/disabling, and changes in the volume setting
+    if (enabled) {
+      webview.webview.postMessage({"cmd": "play", volume});
+    } else {
+      webview.webview.postMessage({"cmd": "pause", volume});
+    }
+  };
+
   setConfigurationVariables();
-  toggleEnabled();
+  toggleVolume();
 
   vscode.workspace.onDidChangeConfiguration(e => {
     setConfigurationVariables();
-    toggleEnabled();
+    toggleVolume();
   });
 
   vscode.window.onDidChangeTextEditorSelection(e => {
@@ -99,7 +101,6 @@ export function activate(context: vscode.ExtensionContext) {
         rulers: rulers.sort((a, b) => (a - b)),
         enablePanning,
         enableDiagnostics,
-        volume,
         lineNumber
       });
     }
