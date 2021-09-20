@@ -8,9 +8,10 @@ export function activate(context: vscode.ExtensionContext) {
   let enableDiagnostics: boolean;
   let volume: number;
 
+
   const setConfigurationVariables = () => {
     enabled = vscode.workspace.getConfiguration('sonica').get('enabled', true);
-    rulers = vscode.workspace.getConfiguration('editor').get('rulers', []);
+    rulers = vscode.workspace.getConfiguration(undefined, vscode.window.activeTextEditor!==undefined ? vscode.window.activeTextEditor.document : undefined).get('editor.rulers', []);
     enablePanning = vscode.workspace.getConfiguration('sonica').get('enablePanning', false);
     enableDiagnostics = vscode.workspace.getConfiguration('sonica').get('enableDiagnostics', false);
     volume = vscode.workspace.getConfiguration('sonica').get('volume', 0.25);
@@ -63,6 +64,7 @@ export function activate(context: vscode.ExtensionContext) {
       isWebviewDisposed = false;
     }
 
+    setConfigurationVariables();
     if (e.selections[0].isSingleLine) {
       let line = e.textEditor.document.lineAt(e.selections[0].active.line);
       let lineNumber = line.lineNumber;

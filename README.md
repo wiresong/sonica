@@ -16,7 +16,6 @@ Sonica is an extension that adds audible indicators to events inside VS Code.
 - Eventual pseudo-HRTF, for determining where the cursor is in context of the entire file
 
 ## Known Bugs
-- The panning for cursor clicks is not perfectly smooth
 - There are some edge cases with regards to what happens when moving to the beginning/end of lines
 
 ## Available settings

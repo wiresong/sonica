@@ -67,7 +67,7 @@ class FileNode {
 
   createNode() {
     let node = this.context.createBufferSource();
-    let panner = this.context.createPanner();
+    let panner = this.context.createStereoPanner();
     node.buffer = this.audioBuffer;
 
     node.connect(panner);
@@ -79,7 +79,7 @@ class FileNode {
   play(pos=0) {
     this.stop();
     this.createNode();
-    this.panner.positionX.value = pos;
+    this.panner.pan.value = pos;
     this.node.start();
     this.node.oended = (() => {
       this.stop();
