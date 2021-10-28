@@ -98,6 +98,7 @@ export function activate(context: vscode.ExtensionContext) {
 
       webview.webview.postMessage({
         "cmd": "cursor",
+        "uri": e.textEditor.document.uri,
         lineLength,
         cursor,
         rulers: rulers.sort((a, b) => (a - b)),

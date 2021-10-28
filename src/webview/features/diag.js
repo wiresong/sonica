@@ -52,7 +52,7 @@ export class Diag extends Feature {
 
   handleCursor(state) {
     let {cursor, lineNumber} = state;
-    let diagnostics = this.diagnostics.flatMap(element=>element[1]).filter(diag=>diag.range[0].line===lineNumber);
+    let diagnostics = this.diagnostics.filter(element=>element[0].external===state.uri.external).flatMap(element=>element[1]).filter(diag=>diag.range[0].line===lineNumber);
     for (const diagnostic of diagnostics) {
       let range = new Range([diagnostic.range[0].character, diagnostic.range[1].character], false);
       if (this.previousLineNumber!==lineNumber || range.contains(cursor)) {
