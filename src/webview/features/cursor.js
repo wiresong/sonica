@@ -23,7 +23,7 @@ export class Cursor extends Feature {
       if (this.rulerNodes[index] !== undefined) {
         this.rulerNodes[index].setPosition(index, position);
       } else {
-        this.rulerNodes.push(new RulerNode({ context: this.context, destination: this.globalGain, parent: this, index, position}));
+        this.rulerNodes.push(new RulerNode({ context: this.context, destination: this.globalGain, parent: this, index, position }));
       }
     }
     // Delete any extraneous nodes...
@@ -65,7 +65,7 @@ export class Cursor extends Feature {
   }
 
   getPlayingRulers() {
-    return this.rulerNodes.filter(node=>node.playing===true).length;
+    return this.rulerNodes.filter(node => node.playing === true).length;
   }
 }
 
@@ -87,7 +87,7 @@ class RulerNode {
 
   setVolume() {
     let playingRulers = this.parent.getPlayingRulers();
-    this.intermediateGain.gain.value = 1/(playingRulers+1);
+    this.intermediateGain.gain.value = 1 / (playingRulers + 1);
   }
 
   update(cursor) {

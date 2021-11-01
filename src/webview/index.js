@@ -1,16 +1,16 @@
 import { Dispatcher } from './dispatcher';
 
-import {Cursor} from './features/cursor';
-import {Diag} from './features/diag';
-import {PlayPause} from './features/playpause';
+import { Cursor } from './features/cursor';
+import { Diag } from './features/diag';
+import { PlayPause } from './features/playpause';
 
 
-window.onload=(event)=> {
+window.onload = (event) => {
   let context = new window.AudioContext();
   let gain = context.createGain();
   gain.gain.value = 0;
 
-  let dispatcher = new Dispatcher({context, globalGain: gain});
+  let dispatcher = new Dispatcher({ context, globalGain: gain });
   dispatcher.register(/play|pause/, PlayPause);
   dispatcher.register(/cursor/, Cursor);
   dispatcher.register(/diag|cursor/, Diag);

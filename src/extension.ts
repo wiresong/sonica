@@ -11,7 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const setConfigurationVariables = () => {
     enabled = vscode.workspace.getConfiguration('sonica').get('enabled', true);
-    rulers = vscode.workspace.getConfiguration(undefined, vscode.window.activeTextEditor!==undefined ? vscode.window.activeTextEditor.document : undefined).get('editor.rulers', []);
+    rulers = vscode.workspace.getConfiguration(undefined, vscode.window.activeTextEditor !== undefined ? vscode.window.activeTextEditor.document : undefined).get('editor.rulers', []);
     enablePanning = vscode.workspace.getConfiguration('sonica').get('enablePanning', false);
     enableDiagnostics = vscode.workspace.getConfiguration('sonica').get('enableDiagnostics', false);
     volume = vscode.workspace.getConfiguration('sonica').get('volume', 0.25);
@@ -27,12 +27,12 @@ export function activate(context: vscode.ExtensionContext) {
       viewColumn: vscode.ViewColumn.Beside,
       preserveFocus: true,
     },
-    {
-      enableScripts: true 
-    });
+      {
+        enableScripts: true
+      });
 
     _webview.webview.html = html(_webview.webview, context.extensionPath);
-    _webview.onDidDispose(e=>{
+    _webview.onDidDispose(e => {
       isWebviewDisposed = true;
     });
     return _webview;
@@ -43,9 +43,9 @@ export function activate(context: vscode.ExtensionContext) {
   const toggleVolume = () => {
     // This handles both enabling/disabling, and changes in the volume setting
     if (enabled) {
-      webview.webview.postMessage({"cmd": "play", volume});
+      webview.webview.postMessage({ "cmd": "play", volume });
     } else {
-      webview.webview.postMessage({"cmd": "pause", volume});
+      webview.webview.postMessage({ "cmd": "pause", volume });
     }
   };
 
@@ -71,15 +71,15 @@ export function activate(context: vscode.ExtensionContext) {
       let text = line.text;
       let cursor = e.selections[0].end.character;
       let tabSize: number = e.textEditor.options.tabSize as number;
-      let tabs = (line.text.match(/\t/g)??[]).length;
+      let tabs = (line.text.match(/\t/g) ?? []).length;
 
-      for (let i=0; i<tabs; i++) {
+      for (let i = 0; i < tabs; i++) {
         let tabPosition = text.indexOf('\t');
-        let tabWidth = tabSize-(tabPosition%tabSize);
+        let tabWidth = tabSize - (tabPosition % tabSize);
         text = text.replace('\t', ' '.repeat(tabWidth));
-        
+
         if (tabPosition <= cursor) {
-          cursor += tabWidth-1;
+          cursor += tabWidth - 1;
         }
       }
 
@@ -92,7 +92,7 @@ export function activate(context: vscode.ExtensionContext) {
       if (previousLineLength === lineLength) {
         cursor += 1;
       } else {
-        if (cursor===0) cursor+=1; // When you move right to the beginning of the line, the cursor is 0; may fix this to be better later
+        if (cursor === 0) cursor += 1; // When you move right to the beginning of the line, the cursor is 0; may fix this to be better later
         previousLineLength = lineLength;
       }
 
@@ -109,15 +109,15 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  vscode.window.onDidChangeWindowState(e=>{
+  vscode.window.onDidChangeWindowState(e => {
     if (e.focused && enabled) {
-      webview.webview.postMessage({"cmd": "play", volume});
+      webview.webview.postMessage({ "cmd": "play", volume });
     } else {
-      webview.webview.postMessage({"cmd": "pause", volume});
+      webview.webview.postMessage({ "cmd": "pause", volume });
     }
   });
 
-  vscode.languages.onDidChangeDiagnostics(e=>{
+  vscode.languages.onDidChangeDiagnostics(e => {
     webview.webview.postMessage({
       'cmd': 'diag',
       enableDiagnostics,

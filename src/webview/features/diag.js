@@ -1,9 +1,9 @@
-import { differenceWith, isEqual} from 'lodash';
+import { differenceWith, isEqual } from 'lodash';
 
-import {Feature} from './feature';
+import { Feature } from './feature';
 
-import {error, warning} from '../files';
-import {FileNode, Range} from '../utils';
+import { error, warning } from '../files';
+import { FileNode, Range } from '../utils';
 
 
 export class Diag extends Feature {
@@ -19,14 +19,14 @@ export class Diag extends Feature {
     super(globalState);
     this.error = new FileNode(this.context, this.globalGain, error);
     this.warning = new FileNode(this.context, this.globalGain, warning);
-    
+
     this.diagnostics = [];
     this.previousLineNumber = undefined;
   }
 
   run(state) {
-    if (state.enableDiagnostics===true) {
-      if (state.cmd === 'diag')  {
+    if (state.enableDiagnostics === true) {
+      if (state.cmd === 'diag') {
         this.handleUpdatedDiagnostics(state);
       } else if (state.cmd === 'cursor') {
         this.handleCursor(state);
@@ -37,8 +37,8 @@ export class Diag extends Feature {
   handleUpdatedDiagnostics(state) {
     let newDiagnostics = [];
     for (const uri of state.uris) {
-      let old_values = this.diagnostics.find(element=>isEqual(element[0], uri))?.[1];
-      let new_values = state.diagnostics.find(element=>isEqual(element[0], uri))?.[1];
+      let old_values = this.diagnostics.find(element => isEqual(element[0], uri))?.[1];
+      let new_values = state.diagnostics.find(element => isEqual(element[0], uri))?.[1];
       let changed = differenceWith(new_values, old_values, isEqual);
       newDiagnostics.push(...changed);
     }
@@ -51,11 +51,13 @@ export class Diag extends Feature {
   }
 
   handleCursor(state) {
-    let {cursor, lineNumber} = state;
-    let diagnostics = this.diagnostics.filter(element=>element[0].external===state.uri.external).flatMap(element=>element[1]).filter(diag=>diag.range[0].line===lineNumber);
+    let { cursor, lineNumber } = state;
+    let diagnostics = this.diagnostics.filter(element => element[0].external === state.uri.external)
+      .flatMap(element => element[1])
+      .filter(diag => diag.range[0].line === lineNumber);
     for (const diagnostic of diagnostics) {
       let range = new Range([diagnostic.range[0].character, diagnostic.range[1].character], false);
-      if (this.previousLineNumber!==lineNumber || range.contains(cursor)) {
+      if (this.previousLineNumber !== lineNumber || range.contains(cursor)) {
         this.playDiagnosticSound(diagnostic);
       }
     }
