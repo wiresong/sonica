@@ -1,85 +1,49 @@
-import * as path from 'path';
 import * as vscode from 'vscode';
+import { AudioBackend } from './audio';
+import { Cursor } from './cursor';
+import { Diagnostics } from './diag';
 
 export function activate(context: vscode.ExtensionContext) {
-  let enabled: boolean;
-  let rulers: number[];
-  let enablePanning: boolean;
-  let enableDiagnostics: boolean;
-  let volume: number;
+  let audio = new AudioBackend(context.extensionPath);
+  let cursor = new Cursor(audio);
+  let diag = new Diagnostics(audio);
 
-
-  const setConfigurationVariables = () => {
-    enabled = vscode.workspace.getConfiguration('sonica').get('enabled', true);
-    rulers = vscode.workspace.getConfiguration(undefined, vscode.window.activeTextEditor !== undefined ? vscode.window.activeTextEditor.document : undefined).get('editor.rulers', []);
-    enablePanning = vscode.workspace.getConfiguration('sonica').get('enablePanning', false);
-    enableDiagnostics = vscode.workspace.getConfiguration('sonica').get('enableDiagnostics', false);
-    volume = vscode.workspace.getConfiguration('sonica').get('volume', 0.25);
+  const config = () => {
+    let enabled = vscode.workspace.getConfiguration('sonica').get('enabled', true);
+    
+    enabled ? audio.play() : audio.pause();
+    audio.volume(vscode.workspace.getConfiguration('sonica').get('volume', 0.25));
+    cursor.setRulers(vscode.workspace.getConfiguration(undefined, vscode.window.activeTextEditor !== undefined ? vscode.window.activeTextEditor.document : undefined).get('editor.rulers', []));
   };
 
+  config();
 
-  let isWebviewDisposed = false;
+  vscode.workspace.onDidChangeConfiguration(config);
 
   let previousLineLength: number = 0;
-
-  const createWebview = () => {
-    let _webview = vscode.window.createWebviewPanel('Sonica', 'Sonica', {
-      viewColumn: vscode.ViewColumn.Beside,
-      preserveFocus: true,
-    },
-      {
-        enableScripts: true
-      });
-
-    _webview.webview.html = html(_webview.webview, context.extensionPath);
-    _webview.onDidDispose(e => {
-      isWebviewDisposed = true;
-    });
-    return _webview;
-  };
-
-  let webview = createWebview();
-
-  const toggleVolume = () => {
-    // This handles both enabling/disabling, and changes in the volume setting
-    if (enabled) {
-      webview.webview.postMessage({ "cmd": "play", volume });
-    } else {
-      webview.webview.postMessage({ "cmd": "pause", volume });
-    }
-  };
-
-  setConfigurationVariables();
-  toggleVolume();
-
-  vscode.workspace.onDidChangeConfiguration(e => {
-    setConfigurationVariables();
-    toggleVolume();
-  });
+  let previousLineNumber: number = 0;
 
   vscode.window.onDidChangeTextEditorSelection(e => {
-    if (isWebviewDisposed || !webview.visible) {
-      webview.dispose();
-      webview = createWebview();
-      isWebviewDisposed = false;
-    }
-
-    setConfigurationVariables();
     if (e.selections[0].isSingleLine) {
       let line = e.textEditor.document.lineAt(e.selections[0].active.line);
-      let lineNumber = line.lineNumber;
       let text = line.text;
-      let cursor = e.selections[0].end.character;
-      let tabSize: number = e.textEditor.options.tabSize as number;
+      let lineNumber = line.lineNumber;
+
+      let c = e.selections[0].anchor.character;
+
       let tabs = (line.text.match(/\t/g) ?? []).length;
+      let tabSize: number = e.textEditor.options.tabSize as number;
 
       for (let i = 0; i < tabs; i++) {
         let tabPosition = text.indexOf('\t');
         let tabWidth = tabSize - (tabPosition % tabSize);
         text = text.replace('\t', ' '.repeat(tabWidth));
 
-        if (tabPosition <= cursor) {
-          cursor += tabWidth - 1;
+        if (tabPosition <= c) {
+          // the -1 is here because, when you move to the tab character, that counts as incrementing the cursor by one
+          // So, to actually represent how much space the tab takes, we have to remove the tab character's contribution
+          c += tabWidth - 1;
+
         }
       }
 
@@ -88,58 +52,32 @@ export function activate(context: vscode.ExtensionContext) {
       // When typing a character, the cursor moves to character position  + 1, i.e. the blank space right after the character
       // When navigating, the cursor equals the position of the character being focused
       // We check if we're only navigating, and update the cursor as a result
-      // If you want to change this, remember that lineLength and cursor are currently both 1-indexed
-      if (previousLineLength === lineLength) {
-        cursor += 1;
-      } else {
-        if (cursor === 0) cursor += 1; // When you move right to the beginning of the line, the cursor is 0; may fix this to be better later
-        previousLineLength = lineLength;
+
+      if (previousLineNumber === lineNumber && previousLineLength !== lineLength) {
+        c -= 1;
       }
 
-      webview.webview.postMessage({
-        "cmd": "cursor",
-        "uri": e.textEditor.document.uri,
-        lineLength,
-        cursor,
-        rulers: rulers.sort((a, b) => (a - b)),
-        enablePanning,
-        enableDiagnostics,
-        lineNumber
-      });
+      previousLineLength = lineLength;
+      previousLineNumber = lineNumber;
+
+      cursor.cursor(c);
+      cursor.rulers(c);
     }
   });
+
+  vscode.languages.onDidChangeDiagnostics(e => diag.uris(e.uris));
+
 
   vscode.window.onDidChangeWindowState(e => {
-    if (e.focused && enabled) {
-      webview.webview.postMessage({ "cmd": "play", volume });
+    if (e.focused) {
+      audio.play();
     } else {
-      webview.webview.postMessage({ "cmd": "pause", volume });
+      audio.pause();
     }
   });
 
-  vscode.languages.onDidChangeDiagnostics(e => {
-    webview.webview.postMessage({
-      'cmd': 'diag',
-      enableDiagnostics,
-      uris: e.uris,
-      diagnostics: vscode.languages.getDiagnostics()
-    });
-  });
 }
 
 
+// this method is called when your extension is deactivated
 export function deactivate() { }
-
-function html(webview: vscode.Webview, extpath: string) {
-  const uri = webview.asWebviewUri(vscode.Uri.file(path.join(extpath + '/dist', 'webview.js')));
-  return `
-  <html>
-<head>
-<title>Sonica</title>
-</head>
-<body>
-<script src="${uri}"></script>
-</body>
-</html>
-  `;
-}
