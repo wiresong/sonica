@@ -34,9 +34,9 @@ impl<'a> Sounds<'a> {
             let mut del = DeleteBehaviorConfig::new();
             del.set_linger(true);
             let src =
-                ScalarPannedSource::new(self.context, synthizer::PannerStrategy::Stereo, 0.0)?;
+                ScalarPannedSource::new(self.context, synthizer::PannerStrategy::Stereo, position)?;
             src.config_delete_behavior(&del)?;
-            src.panning_scalar().set(position)?;
+            //src.panning_scalar().set(position)?;
             let gen = BufferGenerator::new(self.context)?;
             gen.config_delete_behavior(&del)?;
             gen.buffer().set(buffer)?;

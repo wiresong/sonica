@@ -1,5 +1,6 @@
 .vscode/**
 .vscode-test/**
+audio/**
 out/**
 node_modules/**
 src/**
