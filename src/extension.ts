@@ -7,10 +7,10 @@ export function activate(context: vscode.ExtensionContext) {
   let audio = new AudioBackend(context.extensionPath);
   let cursor = new Cursor(audio);
   let diag = new Diagnostics(audio);
+  let enabled = false;
 
   const config = () => {
-    let enabled = vscode.workspace.getConfiguration('sonica').get('enabled', true);
-    
+    enabled = vscode.workspace.getConfiguration('sonica').get('enabled', true);
     enabled ? audio.play() : audio.pause();
     audio.volume(vscode.workspace.getConfiguration('sonica').get('volume', 0.25));
     cursor.setRulers(vscode.workspace.getConfiguration(undefined, vscode.window.activeTextEditor !== undefined ? vscode.window.activeTextEditor.document : undefined).get('editor.rulers', []));
@@ -69,7 +69,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 
   vscode.window.onDidChangeWindowState(e => {
-    if (e.focused) {
+    if (e.focused && enabled) {
       audio.play();
     } else {
       audio.pause();
