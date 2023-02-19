@@ -3,12 +3,11 @@ use std::io::stdin;
 use anyhow::Result;
 use serde::Deserialize;
 use sounds::Sounds;
-use tones::Tones;
 use synthizer as syz;
+use tones::Tones;
 
 mod sounds;
 mod tones;
-
 
 #[derive(Debug, Deserialize)]
 #[serde(tag = "command")]
@@ -24,7 +23,6 @@ enum Command<'a> {
 fn main() -> Result<()> {
     let _init = syz::initialize();
     let context = syz::Context::new()?;
-    
 
     let mut tones_gen = Tones::new(&context)?;
     let mut sounds = Sounds::new(&context)?;

@@ -27,22 +27,24 @@ impl<'a> Tones<'a> {
         }
 
         self.normalize_volume()?;
+
+        // We must add these only after volumes are changed.
+        for t in self.tones.iter() {
+            self.src.add_generator(t)?;
+        }
+
         self.play_tones(tones)?;
         Ok(())
     }
 
     fn add_tone(&mut self) -> Result<()> {
-        // Random closures? shrug
-        let halfstep_to_frequency =
-            |halfstep: u8| 220.0 * ((2.0f64).powf(1.0 / 12.0)).powi(halfstep as i32);
-        // Look at the sins I have committed
-        let seventh_interval = |interval: u8| (0..interval).map(|f| 4 - (f % 2)).sum();
-        let tone = FastSineBankGenerator::new_sine(
-            self.context,
-            halfstep_to_frequency(seventh_interval(self.tones.len() as u8)),
-        )?;
+        fn halfstep_to_frequency(halfstep: u8) -> f64 {
+            220.0 * ((2.0f64).powf(1.0 / 12.0)).powi(halfstep as i32)
+        }
+        let seventh_interval = (0..self.tones.len() as u8).map(|f| 4 - (f % 2)).sum();
+        let tone =
+            FastSineBankGenerator::new_sine(self.context, halfstep_to_frequency(seventh_interval))?;
 
-        self.src.add_generator(&tone)?;
         self.tones.push(tone);
         Ok(())
     }
@@ -50,7 +52,7 @@ impl<'a> Tones<'a> {
     fn normalize_volume(&mut self) -> Result<()> {
         let length = self.tones.len() as f64;
         for tone in self.tones.iter_mut() {
-            tone.gain().set(1.0 / length)?;
+            tone.gain().set(0.5 / length)?;
         }
         Ok(())
     }
