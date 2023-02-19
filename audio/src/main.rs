@@ -30,7 +30,7 @@ fn main() -> Result<()> {
     let mut buff = String::new();
     loop {
         stdin().read_line(&mut buff)?;
-        let des: Command = serde_json::from_str(&buff).unwrap();
+        let des: Command = serde_json::from_str(&buff)?;
         match des {
             Command::Play => context.play()?,
             Command::Pause => context.pause()?,
