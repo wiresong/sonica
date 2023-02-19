@@ -34,7 +34,7 @@ impl<'a> Tones<'a> {
     fn add_tone(&mut self) -> Result<()> {
         // Random closures? shrug
         let halfstep_to_frequency =
-            |halfstep: u8| 220.0 * ((2.0 as f64).powf(1.0 / 12.0)).powi(halfstep as i32);
+            |halfstep: u8| 220.0 * ((2.0f64).powf(1.0 / 12.0)).powi(halfstep as i32);
         // Look at the sins I have committed
         let seventh_interval = |interval: u8| (0..interval).map(|f| 4 - (f % 2)).sum();
         let tone = FastSineBankGenerator::new_sine(
