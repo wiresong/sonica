@@ -8,9 +8,11 @@ export function activate(context: vscode.ExtensionContext) {
   let cursor = new Cursor(audio);
   let diag = new Diagnostics(audio);
   let enabled = false;
+  let enableDiagnostics = false;
 
   const config = () => {
     enabled = vscode.workspace.getConfiguration('sonica').get('enabled', true);
+    enableDiagnostics = vscode.workspace.getConfiguration('sonica').get('enableDiagnostics', true);
     enabled ? audio.play() : audio.pause();
     audio.volume(vscode.workspace.getConfiguration('sonica').get('volume', 0.25));
     cursor.setRulers(vscode.workspace.getConfiguration(undefined, vscode.window.activeTextEditor !== undefined ? vscode.window.activeTextEditor.document : undefined).get('editor.rulers', []));
@@ -65,7 +67,11 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  vscode.languages.onDidChangeDiagnostics(e => diag.uris(e.uris));
+  vscode.languages.onDidChangeDiagnostics(e => {
+    if (enableDiagnostics) {
+      diag.uris(e.uris);
+    }
+  });
 
 
   vscode.window.onDidChangeWindowState(e => {
