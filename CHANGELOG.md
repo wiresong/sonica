@@ -4,7 +4,11 @@ All notable changes to the "linechecker" extension will be documented in this fi
 
 ## [Unreleased]
 
-# # [0.1.2]
+## [0.2.0]
+- Modified the extension to use a Rust subprocess, instead of a webview. No user-facing changes; things should be much more smooth and less resource-heavy, however.
+- Extension is currently windows-only, due to the Rust subprocess; will be fixed later
+
+## [0.1.2]
 ### Fixed
 - Diagnostic sounds now respect file boundaries. Previously, if there was an error on line 2 in file A, a sound would also be played on line 2 in file B. That does not happen now.
 

@@ -7,6 +7,7 @@ src/**
 .gitignore
 .yarnrc
 webpack.config.js
+rust-toolchain.toml
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/.eslintrc.json
