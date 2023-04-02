@@ -58,16 +58,11 @@ jobs:
       - name: Install vsce
         run: npm install -g vsce
 
-      - name: Package
+      - name: Publish
         run: |
           mv sonica_windows/audio.exe audio.exe
           mv sonica_linux/audio audio_linux
           mv sonica_mac/audio audio_mac
           npm install
-          vsce package -o sonica.vsix
+          vsce publish
 
-      - name: Publish artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: extension
-          path: sonica.vsix
