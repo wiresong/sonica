@@ -31,15 +31,14 @@ jobs:
 
 
       - name: Build audio
-        working-directory: ./sonica/audio
+        working-directory: $GITHUB_WORKSPACE/audio
         run: cargo build --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.artifact_name }}
-          path: |
-            ./sonica/audio/target/release/audio${{ matrix.executable_ext }}
+          path: $GITHUB_WORKSPACE/audio/target/release/audio${{ matrix.executable_ext }}
 
   package_and_publish:
     needs: build
