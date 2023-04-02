@@ -63,6 +63,7 @@ jobs:
           mv sonica_windows/audio.exe audio.exe
           mv sonica_linux/audio audio_linux
           mv sonica_mac/audio audio_mac
+          npm install
           vsce package -o sonica.vsix
 
       - name: Publish artifact
