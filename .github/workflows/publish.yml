@@ -60,9 +60,9 @@ jobs:
 
       - name: Package
         run: |
-          mv sonica_windows/audio.exe ./
-          mv sonica_linux/audio ./
-          mv sonica_mac/audio ./
+          mv sonica_windows/audio.exe audio.exe
+          mv sonica_linux/audio audio_linux
+          mv sonica_mac/audio audio_mac
           vsce package -o sonica.vsix
 
       - name: Publish artifact
