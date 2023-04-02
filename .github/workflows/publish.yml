@@ -50,7 +50,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
-          path: ./sonica
+          path: $GITHUB_WORKSPACE
 
       - name: Install Node.js
         uses: actions/setup-node@v2
@@ -60,11 +60,16 @@ jobs:
       - name: Install vsce
         run: npm install -g vsce
 
-      - name: Package and publish
+      - name: Package
         run: |
-          mv ./sonica/sonica_windows/audio.exe ./sonica/audio.exe
-          mv ./sonica/sonica_linux/audio ./sonica/audio_linux
-          mv ./sonica/sonica_mac/audio ./sonica/audio_mac
-          cd sonica
-          vsce package
-          
+          mv $GITHUB_WORKSPACE/sonica_windows/audio.exe $GITHUB_WORKSPACE
+          mv $GITHUB_WORKSPACE/sonica_linux/audio $GITHUB_WORKSPACE
+          mv $GITHUB_WORKSPACE/sonica_mac/audio $GITHUB_WORKSPACE
+          cd $GITHUB_WORKSPACE
+          vsce package -o sonica.vsix
+
+      - name: Publish artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: extension
+          path: $GITHUB_WORKSPACE/sonica.vsix
