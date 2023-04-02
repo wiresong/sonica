@@ -1,0 +1,71 @@
+name: Build and Publish
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macOS-latest]
+        include:
+          - os: windows-latest
+            artifact_name: sonica_windows
+            executable_ext: .exe
+          - os: ubuntu-latest
+            artifact_name: sonica_linux
+            executable_ext: 
+          - os: macOS-latest
+            artifact_name: sonica_mac
+            executable_ext: 
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+
+
+      - name: Build audio
+        working-directory: ./sonica/audio
+        run: cargo build --release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: |
+            ./sonica/audio/target/release/audio${{ matrix.executable_ext }}
+
+  package_and_publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: ./sonica
+
+      - name: Install Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Install vsce
+        run: npm install -g vsce
+
+      - name: Package and publish
+        run: |
+          mv ./sonica/sonica_windows/audio.exe ./sonica/audio.exe
+          mv ./sonica/sonica_linux/audio ./sonica/audio_linux
+          mv ./sonica/sonica_mac/audio ./sonica/audio_mac
+          cd sonica
+          vsce package
+          
