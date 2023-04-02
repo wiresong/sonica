@@ -31,14 +31,14 @@ jobs:
 
 
       - name: Build audio
-        working-directory: $GITHUB_WORKSPACE/audio
+        working-directory: audio
         run: cargo build --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.artifact_name }}
-          path: $GITHUB_WORKSPACE/audio/target/release/audio${{ matrix.executable_ext }}
+          path: audio/target/release/audio${{ matrix.executable_ext }}
 
   package_and_publish:
     needs: build
@@ -49,8 +49,6 @@ jobs:
 
       - name: Download artifacts
         uses: actions/download-artifact@v2
-        with:
-          path: $GITHUB_WORKSPACE
 
       - name: Install Node.js
         uses: actions/setup-node@v2
@@ -62,14 +60,13 @@ jobs:
 
       - name: Package
         run: |
-          mv $GITHUB_WORKSPACE/sonica_windows/audio.exe $GITHUB_WORKSPACE
-          mv $GITHUB_WORKSPACE/sonica_linux/audio $GITHUB_WORKSPACE
-          mv $GITHUB_WORKSPACE/sonica_mac/audio $GITHUB_WORKSPACE
-          cd $GITHUB_WORKSPACE
+          mv sonica_windows/audio.exe .
+          mv sonica_linux/audio .
+          mv sonica_mac/audio .
           vsce package -o sonica.vsix
 
       - name: Publish artifact
         uses: actions/upload-artifact@v3
         with:
           name: extension
-          path: $GITHUB_WORKSPACE/sonica.vsix
+          path: sonica.vsix
