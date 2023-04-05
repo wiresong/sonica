@@ -3,7 +3,7 @@
     "displayName": "Sonica",
     "description": "Sonic indications for lines over a specified limit",
     "publisher": "wiresong",
-    "version": "0.2.0",
+    "version": "1.0.0",
     "repository": "https://github.com/wiresong/sonica",
     "extensionKind": [
         "ui"

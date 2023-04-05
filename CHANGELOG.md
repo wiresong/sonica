@@ -1,8 +1,12 @@
 # Change Log
 
-All notable changes to the "linechecker" extension will be documented in this file.
+All notable changes to the "sonica" extension will be documented in this file.
 
 ## [Unreleased]
+
+## [1.0.0]
+- Make the subprocess work with Windows, Mac, and linux
+- Remove the panning setting, as well as the diagnostics subsystem (since VSCode natively does diagnostics now)
 
 ## [0.2.0]
 - Modified the extension to use a Rust subprocess, instead of a webview. No user-facing changes; things should be much more smooth and less resource-heavy, however.
