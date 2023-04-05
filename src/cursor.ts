@@ -1,5 +1,4 @@
 import { AudioBackend } from "./audio";
-import * as vscode from 'vscode';
 import { Range } from "./utils";
 
 export class Cursor {

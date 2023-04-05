@@ -45,7 +45,6 @@ export function activate(context: vscode.ExtensionContext) {
           // the -1 is here because, when you move to the tab character, that counts as incrementing the cursor by one
           // So, to actually represent how much space the tab takes, we have to remove the tab character's contribution
           c += tabWidth - 1;
-
         }
       }
 
@@ -73,7 +72,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-
   vscode.window.onDidChangeWindowState(e => {
     if (e.focused && enabled) {
       audio.play();
@@ -81,9 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
       audio.pause();
     }
   });
-
 }
-
 
 // this method is called when your extension is deactivated
 export function deactivate() { }

@@ -1,4 +1,4 @@
-import { Diagnostic, DiagnosticSeverity, languages, Uri, window } from "vscode";
+import { Diagnostic, DiagnosticSeverity, languages, Uri } from "vscode";
 
 import { AudioBackend } from "./audio";
 

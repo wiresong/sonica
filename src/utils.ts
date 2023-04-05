@@ -13,7 +13,6 @@ export class Range {
     if (this.end === Infinity) {
         return 1;
     }
-	
     return ((n - this.start) / (this.end - this.start)) * 2 - 1;
   }
 }
