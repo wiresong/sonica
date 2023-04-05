@@ -27,16 +27,6 @@
                     "default": "true",
                     "description": "Determine if the extension is enabled"
                 },
-                "sonica.enablePanning": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Determine if the cursor pans as you type"
-                },
-                "sonica.enableDiagnostics": {
-                    "type": "boolean",
-                    "default": false,
-                    "description": "Determine if diagnostic sounds are played when diagnostics are shown"
-                },
                 "sonica.volume": {
                     "type": "number",
                     "default": 0.25,
